@@ -1,0 +1,85 @@
+/*
+  Design tokens del juego. Cualquier color, tiempo o tamaño reutilizable
+  debe vivir aquí, no repetido dentro de cada archivo CSS.
+  Cuando llegue el arte final, este es el único sitio que hace falta tocar
+  para re-tematizar visualmente todo el juego.
+*/
+
+:root {
+  /*
+    Paleta base — carbón cálido con maderas y ámbar: la penumbra de un
+    edificio viejo con bombillas de filamento, no un azul de interfaz.
+    Los tintes por habitación (madera del apartamento, verde apagado
+    institucional de la Planta 9) viven en data/scenes/*.js
+    (wallColors/floorColors) y en los colores de cada mueble.
+  */
+  --color-black: #070605;
+  --color-bg: #131009;
+  --color-bg-alt: #1a1511;
+  --color-surface: #231c15;
+  --color-surface-raised: #2d241c;
+  --color-border: #41362b;
+
+  --color-text: #eae3d3;
+  --color-text-dim: #a99c88;
+  --color-text-faint: #6e6355;
+
+  --color-accent: #b98a44;
+  --color-accent-soft: #7a6238;
+  --color-accent-cold: #4d7a7a;
+  --color-danger: #8a4232;
+  --color-locked: #453c32;
+
+  --color-overlay-dark: rgba(12, 9, 7, 0.72);
+
+  /* Sombras y brillos compartidos por toda la interfaz */
+  --shadow-panel: 0 18px 40px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  --shadow-raised: 0 6px 18px rgba(0, 0, 0, 0.45);
+  --glow-accent: 0 0 18px rgba(185, 138, 68, 0.35);
+  --panel-glass: rgba(26, 21, 16, 0.84);
+
+  /*
+    Altura visual de la línea de suelo: los pies de entidades y jugador
+    se apoyan aquí, dentro de la franja de suelo con perspectiva.
+    Debe coincidir con CONFIG.FLOOR_BASELINE (js/core/Config.js).
+  */
+  --floor-line: 58px;
+  --floor-height: 118px;
+
+  /* Tipografía — placeholder hasta añadir fuentes propias en /assets/fonts */
+  --font-display: 'Palatino Linotype', 'Book Antiqua', Georgia, 'Times New Roman', serif;
+  --font-body: 'Segoe UI', 'Trebuchet MS', system-ui, sans-serif;
+
+  /* Resolución de diseño fija. Ver js/core/ViewportScaler.js */
+  --viewport-width: 1280px;
+  --viewport-height: 720px;
+
+  /* Tiempos de animación */
+  --duration-fast: 150ms;
+  --duration-medium: 400ms;
+  --duration-slow: 900ms;
+  --duration-scene: 1200ms;
+  --easing-standard: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Orden de capas — debe coincidir con el orden visual deseado */
+  --z-scene: 1;
+  --z-scene-overlay: 5;
+  --z-hud: 10;
+  --z-interaction: 20;
+  --z-dialogue: 30;
+  --z-inventory: 40;
+  --z-elevator: 45;
+  --z-photo: 48;
+  --z-menu: 50;
+  --z-transition: 100;
+
+  --radius-sm: 3px;
+  --radius-md: 6px;
+
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 32px;
+  --spacing-xl: 48px;
+}

@@ -1,0 +1,448 @@
+/*
+  Estilos genéricos para cualquier escena "de mundo" (apartamento, pasillo,
+  futuras plantas) y sus entidades. Los placeholders visuales (rectángulos,
+  círculos, color plano) se aplican aquí; el arte final sustituirá estas
+  reglas por sprites sin tocar la lógica de js/entities.
+
+  Profundidad 2.5D: la ilusión se construye con cuatro trucos que
+  cooperan — (1) un suelo con perspectiva real (plano rotado en X cuyas
+  tablas convergen), (2) una línea de suelo elevada (--floor-line) sobre
+  la que se apoyan los pies de todo lo "de pie", (3) sombras de contacto
+  elípticas bajo cada entidad y (4) capas z por tipo: puertas al fondo,
+  objetos en medio, personajes y jugador delante.
+*/
+
+.scene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--color-bg);
+  animation: scene-enter 1400ms var(--easing-standard);
+}
+
+@keyframes scene-enter {
+  from { transform: scale(1.015); filter: brightness(0.85); }
+  to { transform: scale(1); filter: brightness(1); }
+}
+
+.scene-world {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  will-change: transform;
+}
+
+/*
+  Fondo lejano con parallax: se mueve más despacio que el mundo (ver
+  BG_PARALLAX_FACTOR en GameplayScene). Pared con listones sutiles, luz
+  cenital y una banda de penumbra hacia el techo; los colores se ajustan
+  por escena vía data.wallColors.
+*/
+.scene-bg {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  will-change: transform;
+  background:
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.5) 0%, transparent 18%),
+    radial-gradient(ellipse 60% 42% at 50% 0%, rgba(255, 244, 214, 0.05), transparent 70%),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.018) 0 2px, transparent 2px 170px),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.008) 0 1px, transparent 1px 56px),
+    linear-gradient(
+      to bottom,
+      var(--scene-wall-top, #12121a) 0%,
+      var(--scene-wall-bottom, #0d0d13) 72%,
+      #08080c 100%
+    );
+}
+
+/*
+  Suelo con perspectiva: dentro de la franja inferior, un plano gigante
+  rotado en X hace converger las juntas de las tablas hacia el fondo.
+  El borde superior de la franja es la línea de zócalo de la pared.
+*/
+.scene-floor {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--floor-height);
+  overflow: hidden;
+  border-top: 2px solid rgba(0, 0, 0, 0.55); /* zócalo */
+  box-shadow: inset 0 6px 14px rgba(0, 0, 0, 0.5);
+  background: #0b0b10;
+}
+
+.scene-floor::before {
+  content: '';
+  position: absolute;
+  left: -12%;
+  top: 0;
+  width: 124%;
+  height: 300%;
+  transform-origin: 50% 0;
+  transform: perspective(520px) rotateX(48deg);
+  background:
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.5) 0 2px, transparent 2px 92px),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.022) 0 2px, transparent 2px 58px),
+    linear-gradient(to bottom, var(--scene-floor-near, #17151c) 0%, var(--scene-floor-far, #0a0a0e) 100%);
+}
+
+/* Vaho de luz que se arrastra a ras de suelo */
+.scene-floor::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(255, 240, 200, 0.028), transparent 45%);
+}
+
+.scene-ambient-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 90% 80% at 50% 30%, transparent 35%, rgba(0, 0, 0, 0.5) 100%),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.22), transparent 22%);
+  transition: background var(--duration-slow) var(--easing-standard),
+    opacity var(--duration-slow) var(--easing-standard);
+}
+
+.scene.is-dark .scene-ambient-overlay {
+  background: rgba(2, 2, 5, 0.92);
+}
+
+/* Neblina interior a la deriva, muy tenue (creada por GameplayScene). */
+.scene-haze {
+  position: absolute;
+  inset: -15%;
+  pointer-events: none;
+  filter: blur(80px);
+  background: radial-gradient(closest-side at 62% 48%, rgba(105, 115, 140, 0.07), transparent 70%);
+  animation: haze-drift 58s ease-in-out infinite alternate;
+}
+
+@keyframes haze-drift {
+  from { transform: translate3d(-4%, 1%, 0) scale(1); }
+  to { transform: translate3d(4%, -2%, 0) scale(1.12); }
+}
+
+/* ========================================================================
+   Entidades
+   ======================================================================== */
+
+/*
+  Se posicionan con left/bottom (ver Entity.applyPosition en JS); el
+  margin-bottom las sube hasta la línea de suelo (--floor-line) para que
+  queden "dentro" del suelo con perspectiva. El transform solo centra.
+*/
+.entity {
+  position: absolute;
+  transform: translateX(-50%);
+  margin-bottom: var(--floor-line);
+}
+
+/* Capas de profundidad por tipo: fondo → medio → delante. */
+.entity--door { z-index: 10; }
+.entity--object { z-index: 20; }
+.entity--light { z-index: 22; }
+.entity--character { z-index: 30; }
+.player { z-index: 40; }
+
+/* Sombra de contacto elíptica bajo cada entidad de pie. */
+.entity::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -5px;
+  width: 96%;
+  height: 10px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.5), transparent 70%);
+  pointer-events: none;
+}
+
+/* Lo colgado en la pared (y > 0) no proyecta sombra de contacto y queda
+   ligeramente atenuado, como a media distancia. */
+.entity--elevated::after {
+  display: none;
+}
+
+.entity--elevated .entity__shape {
+  filter: brightness(0.92) saturate(0.9);
+}
+
+.entity__shape {
+  position: relative;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.055),
+    inset 0 -6px 12px rgba(0, 0, 0, 0.3),
+    0 4px 10px rgba(0, 0, 0, 0.35);
+  transition: filter var(--duration-fast) var(--easing-standard);
+}
+
+.entity__shape--rect {
+  border-radius: var(--radius-sm);
+}
+
+.entity__shape--circle {
+  border-radius: 50%;
+}
+
+/* Interruptor de luz apagado (ver js/entities/Light.js). */
+.entity.is-off .entity__shape {
+  opacity: 0.3;
+  filter: grayscale(1);
+}
+
+/* Puerta abierta: giro 2.5D sobre sus bisagras (ver js/entities/Door.js). */
+.entity .entity__shape {
+  transition: transform var(--duration-medium) var(--easing-standard),
+    opacity var(--duration-medium) var(--easing-standard),
+    filter var(--duration-fast) var(--easing-standard);
+}
+
+.entity.is-open .entity__shape {
+  transform: perspective(340px) rotateY(52deg);
+  transform-origin: left center;
+  filter: brightness(0.75);
+}
+
+.entity--interactive {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.entity--interactive.is-focused .entity__shape {
+  outline: 1px solid rgba(163, 129, 63, 0.85);
+  outline-offset: 4px;
+  filter: brightness(1.18);
+}
+
+.entity-label {
+  position: absolute;
+  top: -1.6em;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+  white-space: nowrap;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+/* ========================================================================
+   Jugador: maniquí articulado (ver Player.createElement)
+   ======================================================================== */
+
+/*
+  A diferencia de las entidades (línea de suelo fija por CSS), el
+  jugador controla su bottom/escala/capa desde JS según su profundidad
+  (ver Player.applyPosition): aquí no se le añade margen.
+*/
+.player {
+  position: absolute;
+  transform: translateX(-50%);
+  transform-origin: 50% 100%;
+  width: 34px;
+  height: 78px;
+}
+
+.player__shadow {
+  position: absolute;
+  left: 50%;
+  bottom: -5px;
+  width: 40px;
+  height: 11px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.55), transparent 68%);
+}
+
+.player.is-walking .player__shadow {
+  animation: shadow-squash 0.46s ease-in-out infinite;
+}
+
+@keyframes shadow-squash {
+  0%, 100% { transform: translateX(-50%) scaleX(1); opacity: 1; }
+  50% { transform: translateX(-50%) scaleX(0.88); opacity: 0.85; }
+}
+
+/* El volteo vive en su propia capa para no pisar las animaciones del rig. */
+.player__flip {
+  position: absolute;
+  inset: 0;
+  transition: transform 140ms var(--easing-standard);
+}
+
+.player.is-facing-left .player__flip {
+  transform: scaleX(-1);
+}
+
+.player__rig {
+  position: absolute;
+  inset: 0;
+  animation: rig-idle 4.6s ease-in-out infinite;
+}
+
+.player.is-walking .player__rig {
+  animation: rig-walk 0.46s ease-in-out infinite;
+}
+
+@keyframes rig-idle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-1px); }
+}
+
+@keyframes rig-walk {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.player__part {
+  position: absolute;
+}
+
+.player__head {
+  top: 0;
+  left: 50%;
+  width: 17px;
+  height: 17px;
+  margin-left: -8.5px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6e938f 0%, #4d7a7a 60%, #3c5f60 100%);
+  box-shadow: inset -2px -2px 4px rgba(0, 0, 0, 0.35), 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.player__torso {
+  top: 17px;
+  left: 50%;
+  width: 21px;
+  height: 31px;
+  margin-left: -10.5px;
+  border-radius: 8px 8px 6px 6px;
+  background: linear-gradient(135deg, #557f7d 0%, #446a6b 55%, #35555a 100%);
+  box-shadow: inset -3px -4px 6px rgba(0, 0, 0, 0.3), inset 0 2px 2px rgba(255, 255, 255, 0.08);
+}
+
+.player__arm--near,
+.player__arm--far {
+  top: 20px;
+  width: 7px;
+  height: 27px;
+  border-radius: 4px;
+  transform-origin: 50% 3px; /* hombro */
+}
+
+.player__arm--near {
+  left: 22px;
+  background: linear-gradient(to bottom, #4d7a7a, #3a5c5f);
+  box-shadow: inset -1px -2px 3px rgba(0, 0, 0, 0.35);
+}
+
+.player__arm--far {
+  left: 5px;
+  background: linear-gradient(to bottom, #3d6263, #2f4c50);
+}
+
+.player__leg--near,
+.player__leg--far {
+  top: 46px;
+  width: 8px;
+  height: 30px;
+  border-radius: 4px 4px 3px 3px;
+  transform-origin: 50% 3px; /* cadera */
+}
+
+.player__leg--near {
+  left: 18px;
+  background: linear-gradient(to bottom, #3f5a63 0%, #33474f 70%, #222d33 100%);
+  box-shadow: inset -1px -2px 3px rgba(0, 0, 0, 0.35);
+}
+
+.player__leg--far {
+  left: 9px;
+  background: linear-gradient(to bottom, #32474e 0%, #28383e 70%, #1b2428 100%);
+}
+
+/* Reposo: brazos caídos con un vaivén casi imperceptible. */
+.player__arm--near { animation: idle-arm 4.6s ease-in-out infinite; }
+.player__arm--far { animation: idle-arm 4.6s ease-in-out -2.3s infinite; }
+
+@keyframes idle-arm {
+  0%, 100% { transform: rotate(2deg); }
+  50% { transform: rotate(-2deg); }
+}
+
+/* Ciclo de andar: miembros opuestos en contrafase. */
+.player.is-walking .player__leg--near { animation: walk-limb 0.46s ease-in-out infinite; }
+.player.is-walking .player__leg--far { animation: walk-limb 0.46s ease-in-out -0.23s infinite; }
+.player.is-walking .player__arm--near { animation: walk-limb 0.46s ease-in-out -0.23s infinite; }
+.player.is-walking .player__arm--far { animation: walk-limb 0.46s ease-in-out infinite; }
+
+@keyframes walk-limb {
+  0%, 100% { transform: rotate(26deg); }
+  50% { transform: rotate(-26deg); }
+}
+
+/* ========================================================================
+   Luces y ambiente
+   ======================================================================== */
+
+.light-flicker {
+  animation: light-flicker 6s infinite;
+}
+
+@keyframes light-flicker {
+  0%, 19%, 21%, 23%, 80%, 100% { opacity: 1; }
+  20%, 22%, 81% { opacity: 0.55; }
+}
+
+/* ========================================================================
+   Escena de introducción narrada
+   ======================================================================== */
+
+.intro-scene {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at center, #0a0a10 0%, var(--color-black) 100%);
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.intro-scene__line {
+  max-width: 70%;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  line-height: 1.8;
+  letter-spacing: 0.04em;
+  text-align: center;
+  color: var(--color-text-dim);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity var(--duration-slow) var(--easing-standard),
+    transform var(--duration-slow) var(--easing-standard);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.8);
+}
+
+.intro-scene__line.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.intro-scene__skip {
+  position: absolute;
+  bottom: var(--spacing-md);
+  right: var(--spacing-md);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+  animation: dialogue-blink 2.2s infinite;
+}

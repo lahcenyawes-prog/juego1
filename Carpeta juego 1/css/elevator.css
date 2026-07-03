@@ -1,0 +1,175 @@
+/*
+  Ascensor: las puertas físicas en la escena (entidad Elevator) y el
+  panel modal de selección de planta (ElevatorPanel). Ver js/building/.
+*/
+
+/* Se combina con la clase base ".entity", que ya aporta position/transform. */
+.elevator-doors {
+  width: 90px;
+  height: 130px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-alt);
+}
+
+/* Marco interior: las hojas se deslizan dentro y quedan recortadas aquí,
+   mientras el indicador de planta vive fuera, sobre el marco. */
+.elevator-doors__frame {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  overflow: hidden;
+}
+
+.elevator-doors__display {
+  position: absolute;
+  top: -26px;
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 34px;
+  padding: 2px 6px;
+  text-align: center;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  color: var(--color-accent);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  text-shadow: 0 0 8px rgba(163, 129, 63, 0.6);
+}
+
+.elevator-doors__display.is-moving {
+  animation: display-blink 0.7s steps(2) infinite;
+}
+
+@keyframes display-blink {
+  0% { opacity: 1; }
+  100% { opacity: 0.35; }
+}
+
+.elevator-doors__panel {
+  flex: 1;
+  background: var(--color-surface-raised);
+  border-right: 1px solid var(--color-border);
+  transition: transform var(--duration-slow) var(--easing-standard);
+}
+
+.elevator-doors__panel:last-child {
+  border-right: none;
+}
+
+.elevator-doors.is-open .elevator-doors__panel:first-child {
+  transform: translateX(-100%);
+}
+
+.elevator-doors.is-open .elevator-doors__panel:last-child {
+  transform: translateX(100%);
+}
+
+.elevator-panel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-overlay-dark);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-medium) var(--easing-standard);
+}
+
+.elevator-panel.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.elevator-panel__cabinet {
+  width: 260px;
+  padding: var(--spacing-md);
+  background: var(--panel-glass);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(163, 129, 63, 0.22);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-panel);
+  animation: panel-rise 260ms var(--easing-standard);
+}
+
+.elevator-panel__title {
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+  margin-bottom: var(--spacing-sm);
+  text-align: center;
+}
+
+.elevator-panel__indicator {
+  margin-bottom: var(--spacing-sm);
+  padding: 4px;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  letter-spacing: 0.15em;
+  color: var(--color-accent);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  text-shadow: 0 0 8px rgba(163, 129, 63, 0.5);
+}
+
+.elevator-panel__floors {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.elevator-floor-button {
+  pointer-events: auto;
+  aspect-ratio: 1;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-alt);
+  color: var(--color-text-dim);
+  font-size: 0.95rem;
+}
+
+.elevator-floor-button:hover {
+  color: var(--color-bg);
+  background: var(--color-accent);
+}
+
+.elevator-floor-button.is-locked {
+  color: var(--color-locked);
+}
+
+.elevator-floor-button.is-locked:hover {
+  color: var(--color-text);
+  background: var(--color-danger);
+}
+
+.elevator-floor-button.is-current {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.elevator-floor-button.is-denied {
+  animation: elevator-denied 320ms ease;
+}
+
+@keyframes elevator-denied {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+.elevator-panel__close {
+  pointer-events: auto;
+  margin-top: var(--spacing-sm);
+  width: 100%;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--color-text-faint);
+}
+
+.elevator-panel__close:hover {
+  color: var(--color-text);
+}

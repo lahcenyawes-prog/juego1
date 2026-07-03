@@ -1,0 +1,174 @@
+/*
+  Efectos visuales transversales: post-procesado de pantalla (grano,
+  viñeta), atmósfera (niebla del menú, polvo flotante, respiración del
+  escenario, parpadeo ambiental) y sacudidas de cámara.
+
+  Los efectos de pantalla completa viven en pseudo-elementos de
+  #game-stage para no añadir capas al index.html; los de cámara se
+  aplican sobre #game-root (que no tiene transform propio, al contrario
+  que #game-stage, cuyo transform de escalado no debe pisarse).
+*/
+
+/* ---- Post-procesado: viñeta ---- */
+#game-stage::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 55%,
+    rgba(0, 0, 0, 0.25) 78%,
+    rgba(0, 0, 0, 0.55) 100%
+  );
+}
+
+/* ---- Post-procesado: grano de película, muy sutil ---- */
+#game-stage::before {
+  content: '';
+  position: absolute;
+  inset: -60%;
+  z-index: 61;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image:
+    repeating-radial-gradient(circle at 17% 32%, rgba(255, 255, 255, 0.6) 0 1px, transparent 1px 4px),
+    repeating-radial-gradient(circle at 73% 64%, rgba(255, 255, 255, 0.45) 0 1px, transparent 1px 5px);
+  background-size: 210px 210px, 260px 260px;
+  animation: film-grain 0.9s steps(6) infinite;
+}
+
+@keyframes film-grain {
+  0% { transform: translate(0, 0); }
+  17% { transform: translate(-2%, 1%); }
+  33% { transform: translate(1%, -2%); }
+  50% { transform: translate(-1%, 2%); }
+  67% { transform: translate(2%, 1%); }
+  83% { transform: translate(-2%, -1%); }
+  100% { transform: translate(0, 0); }
+}
+
+/* ---- Entrada compartida de paneles modales (opciones, ascensor, teclado) ---- */
+@keyframes panel-rise {
+  from { opacity: 0; transform: translateY(14px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ---- Respiración del escenario (aplicada por GameplayScene) ----
+   Encadena la entrada de escena (scene-enter, en scenes.css) con la
+   respiración infinita: si se declarara sola, pisaría la animación de
+   entrada al compartir la propiedad transform. */
+.fx-breathe {
+  animation:
+    scene-enter 1400ms var(--easing-standard),
+    scene-breathe 16s ease-in-out 1400ms infinite;
+}
+
+@keyframes scene-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.006); }
+}
+
+/* ---- Sacudidas y pulso de cámara (ver js/effects/CameraFX.js) ---- */
+.fx-shake-soft {
+  animation: cam-shake-soft 0.4s ease-out;
+}
+
+.fx-shake-strong {
+  animation: cam-shake-strong 0.55s ease-out;
+}
+
+.fx-zoom-pulse {
+  animation: cam-zoom-pulse 0.9s var(--easing-standard);
+}
+
+@keyframes cam-shake-soft {
+  0%, 100% { transform: translate(0, 0); }
+  20% { transform: translate(2px, -1px); }
+  40% { transform: translate(-2px, 1px); }
+  60% { transform: translate(1px, 1px); }
+  80% { transform: translate(-1px, -1px); }
+}
+
+@keyframes cam-shake-strong {
+  0%, 100% { transform: translate(0, 0); }
+  15% { transform: translate(5px, -3px); }
+  30% { transform: translate(-4px, 3px); }
+  45% { transform: translate(4px, 2px); }
+  60% { transform: translate(-3px, -2px); }
+  80% { transform: translate(2px, 1px); }
+}
+
+@keyframes cam-zoom-pulse {
+  0%, 100% { transform: scale(1); }
+  40% { transform: scale(1.012); }
+}
+
+/* ---- Parpadeo ambiental de escena (ver js/effects/AmbientFlicker.js) ---- */
+.scene.is-flickering .scene-ambient-overlay {
+  transition: none;
+  background: rgba(3, 3, 7, 0.72);
+}
+
+/* ---- Polvo flotante (ver js/effects/DustField.js) ---- */
+.dust-field {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.dust-mote {
+  position: absolute;
+  left: var(--mote-x);
+  bottom: -4px;
+  width: var(--mote-size);
+  height: var(--mote-size);
+  border-radius: 50%;
+  background: rgba(233, 230, 223, 0.5);
+  filter: blur(1px);
+  opacity: 0;
+  animation: mote-rise var(--mote-duration) linear var(--mote-delay) infinite;
+}
+
+@keyframes mote-rise {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  12% { opacity: var(--mote-opacity); }
+  85% { opacity: var(--mote-opacity); }
+  100% {
+    transform: translate(var(--mote-drift), -104vh);
+    opacity: 0;
+  }
+}
+
+/* ---- Niebla del menú principal ---- */
+.main-menu__fog {
+  position: absolute;
+  inset: -20%;
+  pointer-events: none;
+  filter: blur(70px);
+}
+
+.main-menu__fog--far {
+  background: radial-gradient(closest-side at 30% 60%, rgba(90, 100, 125, 0.13), transparent 70%);
+  animation: fog-drift-far 70s ease-in-out infinite alternate;
+}
+
+.main-menu__fog--near {
+  background: radial-gradient(closest-side at 70% 40%, rgba(120, 125, 150, 0.17), transparent 65%);
+  animation: fog-drift-near 44s ease-in-out infinite alternate;
+}
+
+@keyframes fog-drift-far {
+  from { transform: translate3d(-4%, -2%, 0) scale(1); }
+  to { transform: translate3d(5%, 3%, 0) scale(1.08); }
+}
+
+@keyframes fog-drift-near {
+  from { transform: translate3d(5%, 2%, 0) scale(1.05); }
+  to { transform: translate3d(-6%, -3%, 0) scale(1); }
+}

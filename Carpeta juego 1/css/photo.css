@@ -1,0 +1,90 @@
+/*
+  Visor de la cámara de fotos. Solo estructura visual por ahora.
+  Ver js/photo/PhotoUI.js.
+*/
+
+.photo-ui {
+  position: absolute;
+  inset: 0;
+  display: none;
+  pointer-events: none;
+}
+
+.photo-ui.is-active {
+  display: block;
+  pointer-events: auto;
+}
+
+.photo-ui__frame {
+  position: absolute;
+  inset: 24px;
+  border: 2px solid rgba(233, 230, 223, 0.5);
+}
+
+.photo-ui__frame::before,
+.photo-ui__frame::after {
+  content: '';
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--color-text);
+}
+
+.photo-ui__frame::before {
+  top: -2px;
+  left: -2px;
+  border-right: none;
+  border-bottom: none;
+}
+
+.photo-ui__frame::after {
+  bottom: -2px;
+  right: -2px;
+  border-left: none;
+  border-top: none;
+}
+
+.photo-ui__hint {
+  position: absolute;
+  top: var(--spacing-md);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+}
+
+.photo-ui__shutter {
+  position: absolute;
+  bottom: var(--spacing-lg);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 3px solid var(--color-text);
+  background: transparent;
+  pointer-events: auto;
+}
+
+.photo-ui__shutter:hover {
+  border-color: var(--color-accent);
+}
+
+.photo-ui__flash {
+  position: absolute;
+  inset: 0;
+  background: white;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.photo-ui__flash.is-flashing {
+  animation: photo-flash var(--duration-medium) ease-out;
+}
+
+@keyframes photo-flash {
+  0% { opacity: 0.9; }
+  100% { opacity: 0; }
+}

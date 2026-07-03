@@ -1,0 +1,79 @@
+/*
+  Estructura visual raíz: el "stage" de resolución fija que se escala
+  para llenar la ventana (ver js/core/ViewportScaler.js) y las capas
+  apiladas dentro de él. Cada capa se corresponde 1:1 con un elemento
+  del index.html y con un componente de js/ui, js/dialogue, etc.
+*/
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  background: var(--color-black);
+  font-family: var(--font-body);
+  color: var(--color-text);
+}
+
+#game-root {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--color-black);
+}
+
+#game-stage {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--viewport-width);
+  height: var(--viewport-height);
+  transform: translate(-50%, -50%);
+  transform-origin: center center;
+  background: var(--color-bg);
+  overflow: hidden;
+  box-shadow: 0 0 80px rgba(0, 0, 0, 0.8);
+}
+
+/*
+  Todas las capas ocupan el stage entero y no capturan clics por defecto,
+  para que una capa vacía nunca bloquee a la que tiene debajo. Los
+  componentes reactivan pointer-events en sus propios elementos.
+*/
+.layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Aviso de arranque fallido: main.js lo elimina en cuanto se ejecuta. */
+#boot-fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-xl);
+  text-align: center;
+  color: var(--color-text-dim);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+#boot-fallback code {
+  color: var(--color-accent);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>La Última Planta</title>
+
+  <link rel="stylesheet" href="css/reset.css" />
+  <link rel="stylesheet" href="css/variables.css" />
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/transitions.css" />
+  <link rel="stylesheet" href="css/scenes.css" />
+  <link rel="stylesheet" href="css/menu.css" />
+  <link rel="stylesheet" href="css/hud.css" />
+  <link rel="stylesheet" href="css/interaction.css" />
+  <link rel="stylesheet" href="css/dialogue.css" />
+  <link rel="stylesheet" href="css/inventory.css" />
+  <link rel="stylesheet" href="css/elevator.css" />
+  <link rel="stylesheet" href="css/puzzles.css" />
+  <link rel="stylesheet" href="css/photo.css" />
+  <link rel="stylesheet" href="css/effects.css" />
+</head>
+<body>
+  <div id="game-root">
+    <div id="game-stage">
+      <!-- El mundo jugable: fondos, jugador, personajes y objetos -->
+      <div id="scene-layer" class="layer"></div>
+
+      <!-- Interfaz permanente en pantalla (prompts de interacción, icono de inventario) -->
+      <div id="hud-layer" class="layer"></div>
+
+      <!-- Menú contextual de verbos (Examinar / Hablar / Abrir / Cerrar / Usar) -->
+      <div id="interaction-layer" class="layer"></div>
+
+      <!-- Cuadro de diálogo y textos de examinar -->
+      <div id="dialogue-layer" class="layer"></div>
+
+      <!-- Panel de inventario (6 huecos) -->
+      <div id="inventory-layer" class="layer"></div>
+
+      <!-- Panel del ascensor (selección de planta) -->
+      <div id="elevator-layer" class="layer"></div>
+
+      <!-- Interfaces de puzles (teclado numérico, etc.) -->
+      <div id="puzzle-layer" class="layer"></div>
+
+      <!-- Visor de la cámara de fotos -->
+      <div id="photo-layer" class="layer"></div>
+
+      <!-- Menús modales (opciones); el menú principal es una escena más -->
+      <div id="menu-layer" class="layer"></div>
+
+      <!-- Transiciones de pantalla completa (fundidos entre escenas) -->
+      <div id="transition-layer" class="layer"></div>
+
+      <!-- main.js elimina este aviso al arrancar. Si sigue visible, el
+           JavaScript no pudo ejecutarse: casi siempre significa que la
+           página se abrió con doble clic (file://) en lugar de servirse
+           por HTTP con Live Server. -->
+      <div id="boot-fallback">
+        <p>El juego no ha podido arrancar.</p>
+        <p>
+          Abre el proyecto en VS Code y usa <strong>Live Server</strong>
+          (clic derecho en <code>index.html</code> → "Open with Live Server").
+          Abrir el archivo directamente con doble clic no funciona: los módulos
+          de JavaScript necesitan servirse por HTTP.
+        </p>
+        <p>Si ya usas Live Server, revisa la consola del navegador (F12).</p>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

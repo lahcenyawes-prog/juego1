@@ -1,0 +1,119 @@
+/*
+  Interfaz de puzles. Por ahora, el teclado numérico modal
+  (js/ui/KeypadUI.js); los puzles futuros con UI propia añaden aquí
+  sus estilos.
+*/
+
+.keypad {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-overlay-dark);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-medium) var(--easing-standard);
+}
+
+.keypad.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.keypad__panel {
+  width: 240px;
+  padding: var(--spacing-md);
+  background: var(--panel-glass);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(163, 129, 63, 0.22);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-panel);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  animation: panel-rise 260ms var(--easing-standard);
+}
+
+.keypad__title {
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+  text-align: center;
+}
+
+.keypad__display {
+  padding: var(--spacing-sm);
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  letter-spacing: 0.3em;
+  color: var(--color-accent);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.keypad__display.is-error {
+  animation: keypad-error 320ms ease;
+  color: var(--color-danger);
+}
+
+@keyframes keypad-error {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.keypad__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.keypad__key {
+  pointer-events: auto;
+  aspect-ratio: 1.35;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-alt);
+  color: var(--color-text-dim);
+  font-size: 0.95rem;
+  transition: background var(--duration-fast) var(--easing-standard),
+    color var(--duration-fast) var(--easing-standard);
+}
+
+.keypad__key:hover {
+  color: var(--color-bg);
+  background: var(--color-accent);
+}
+
+.keypad__key:active {
+  transform: translateY(1px);
+}
+
+.keypad__key--action {
+  color: var(--color-danger);
+}
+
+.keypad__close {
+  pointer-events: auto;
+  margin-top: var(--spacing-xs);
+  width: 100%;
+  text-align: center;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-faint);
+}
+
+.keypad__close:hover {
+  color: var(--color-text);
+}
+
+/* Marca visual de un objeto cuyo puzle ya se resolvió. */
+.entity.is-solved .entity__shape {
+  border: 1px solid var(--color-accent-soft);
+  box-shadow: 0 0 18px rgba(163, 129, 63, 0.25);
+}

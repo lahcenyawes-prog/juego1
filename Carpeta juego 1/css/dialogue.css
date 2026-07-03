@@ -1,0 +1,151 @@
+/*
+  Cuadro de diálogo. Se reutiliza tanto para conversaciones con
+  personajes (con nombre y retrato) como para textos de "examinar"
+  (sin nombre ni retrato). Ver js/dialogue/DialogueBox.js.
+*/
+
+.dialogue-box {
+  position: absolute;
+  left: 50%;
+  bottom: var(--spacing-lg);
+  transform: translateX(-50%) translateY(10px);
+  width: 86%;
+  max-width: 980px;
+  min-height: 120px;
+  display: flex;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: var(--panel-glass);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(163, 129, 63, 0.22);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-panel);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-medium) var(--easing-standard),
+    transform var(--duration-medium) var(--easing-standard);
+}
+
+.dialogue-box.is-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+
+.dialogue-box__portrait {
+  flex-shrink: 0;
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.08), transparent 60%),
+    var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  box-shadow: inset 0 -8px 14px rgba(0, 0, 0, 0.4), var(--shadow-raised);
+}
+
+.dialogue-box__portrait.is-empty {
+  visibility: hidden;
+}
+
+.dialogue-box__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  min-width: 0;
+}
+
+.dialogue-box__speaker {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  min-height: 1.2em;
+  text-shadow: var(--glow-accent);
+}
+
+.dialogue-box__speaker:not(:empty)::after {
+  content: '';
+  display: block;
+  width: 44px;
+  height: 1px;
+  margin-top: 5px;
+  background: linear-gradient(to right, var(--color-accent-soft), transparent);
+}
+
+.dialogue-box__text {
+  font-size: 1.02rem;
+  line-height: 1.6;
+  letter-spacing: 0.01em;
+  color: var(--color-text);
+  min-height: 3em;
+  white-space: pre-wrap;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.dialogue-box__footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.dialogue-box__continue {
+  font-size: 0.75rem;
+  color: var(--color-text-faint);
+  animation: dialogue-blink 1.4s infinite;
+}
+
+.dialogue-box__choices {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: var(--spacing-xs);
+}
+
+.dialogue-choice {
+  pointer-events: auto;
+  position: relative;
+  text-align: left;
+  padding: 7px 12px 7px 18px;
+  border: 1px solid rgba(51, 51, 63, 0.9);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-dim);
+  font-size: 0.92rem;
+  background: rgba(255, 255, 255, 0.015);
+  transition: color var(--duration-fast) var(--easing-standard),
+    border-color var(--duration-fast) var(--easing-standard),
+    background var(--duration-fast) var(--easing-standard),
+    padding-left var(--duration-fast) var(--easing-standard);
+}
+
+/* Barra de acento que se enciende en la opción bajo el cursor. */
+.dialogue-choice::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 15%;
+  bottom: 15%;
+  width: 2px;
+  border-radius: 1px;
+  background: transparent;
+  transition: background var(--duration-fast) var(--easing-standard);
+}
+
+.dialogue-choice:hover,
+.dialogue-choice:focus-visible {
+  color: var(--color-text);
+  border-color: var(--color-accent-soft);
+  background: rgba(163, 129, 63, 0.09);
+  padding-left: 24px;
+}
+
+.dialogue-choice:hover::before,
+.dialogue-choice:focus-visible::before {
+  background: var(--color-accent);
+}
+
+@keyframes dialogue-blink {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 1; }
+}
