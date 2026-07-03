@@ -1,0 +1,53 @@
+/*
+  Menú contextual de verbos que aparece al interactuar con un objeto
+  (Examinar / Hablar / Abrir / Cerrar / Usar). Ver js/ui/InteractionMenu.js.
+*/
+
+.interaction-menu {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 5px;
+  background: var(--panel-glass);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(163, 129, 63, 0.25);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-raised);
+  pointer-events: auto;
+  transform-origin: 50% 100%;
+  animation: menu-pop 160ms var(--easing-standard);
+}
+
+@keyframes menu-pop {
+  from {
+    opacity: 0;
+    transform: translate(-50%, calc(-100% + 6px)) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -100%) scale(1);
+  }
+}
+
+.interaction-menu__option {
+  pointer-events: auto;
+  padding: 6px 18px;
+  font-size: 0.78rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--color-text-dim);
+  text-align: left;
+  border-radius: var(--radius-sm);
+  transition: color var(--duration-fast) var(--easing-standard),
+    background var(--duration-fast) var(--easing-standard),
+    padding-left var(--duration-fast) var(--easing-standard);
+}
+
+.interaction-menu__option:hover,
+.interaction-menu__option:focus-visible {
+  color: var(--color-bg);
+  background: linear-gradient(to right, var(--color-accent), var(--color-accent-soft));
+  padding-left: 22px;
+}

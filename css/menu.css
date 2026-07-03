@@ -1,0 +1,187 @@
+/*
+  Menú principal y menú de opciones. Ambos son pantallas oscuras de
+  tipo "overlay" gestionadas por js/scenes/MainMenuScene.js y
+  js/ui/OptionsMenu.js respectivamente.
+*/
+
+/*
+  El fondo apila tres capas: un velo oscuro (para que el texto respire),
+  la imagen assets/ui/menu_background.png cuando exista, y un degradado
+  de respaldo que es lo único visible mientras tanto. Sustituir el arte
+  no requiere tocar nada más que colocar el archivo.
+*/
+.main-menu {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-xl);
+  background:
+    radial-gradient(ellipse at center, rgba(11, 11, 16, 0.45) 0%, rgba(5, 5, 7, 0.9) 100%),
+    url('../assets/ui/menu_background.png') center / cover no-repeat,
+    radial-gradient(ellipse at center, var(--color-bg-alt) 0%, var(--color-black) 100%);
+  pointer-events: auto;
+}
+
+/* El contenido queda por encima de las capas de niebla. */
+.main-menu__heading,
+.main-menu__options,
+.main-menu__exit-message,
+.main-menu__version {
+  position: relative;
+  z-index: 1;
+}
+
+.main-menu__heading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.main-menu__title {
+  font-family: var(--font-display);
+  font-size: 3rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  text-shadow: 0 0 24px rgba(163, 129, 63, 0.35);
+  animation: title-breathe 7s ease-in-out infinite;
+}
+
+@keyframes title-breathe {
+  0%, 100% { text-shadow: 0 0 24px rgba(163, 129, 63, 0.3); opacity: 0.94; }
+  50% { text-shadow: 0 0 38px rgba(163, 129, 63, 0.5); opacity: 1; }
+}
+
+.main-menu__subtitle {
+  font-size: 0.8rem;
+  color: var(--color-text-faint);
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+}
+
+.main-menu__options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+.menu-button {
+  pointer-events: auto;
+  min-width: 240px;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--color-text-dim);
+  font-size: 1rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-align: center;
+  transition: color var(--duration-medium) var(--easing-standard),
+    border-color var(--duration-medium) var(--easing-standard),
+    letter-spacing var(--duration-medium) var(--easing-standard),
+    background var(--duration-medium) var(--easing-standard);
+}
+
+.menu-button:hover:not(:disabled),
+.menu-button:focus-visible:not(:disabled) {
+  color: var(--color-text);
+  border-color: var(--color-accent-soft);
+  letter-spacing: 0.2em;
+  background: rgba(163, 129, 63, 0.06);
+}
+
+.menu-button:disabled {
+  color: var(--color-text-faint);
+  opacity: 0.5;
+}
+
+.main-menu__exit-message {
+  font-size: 0.8rem;
+  color: var(--color-text-faint);
+  letter-spacing: 0.05em;
+}
+
+.main-menu__version {
+  position: absolute;
+  bottom: var(--spacing-sm);
+  right: var(--spacing-md);
+  font-size: 0.7rem;
+  color: var(--color-text-faint);
+}
+
+/* Opciones */
+.options-menu {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-overlay-dark);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-medium) var(--easing-standard);
+}
+
+.options-menu.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.options-menu__panel {
+  width: 460px;
+  padding: var(--spacing-lg);
+  background: var(--panel-glass);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(163, 129, 63, 0.22);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-panel);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  animation: panel-rise 260ms var(--easing-standard);
+}
+
+.options-menu__title {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  margin-bottom: var(--spacing-xs);
+}
+
+.options-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+}
+
+.options-row__label {
+  font-size: 0.85rem;
+  color: var(--color-text-dim);
+}
+
+.options-row input[type='range'] {
+  width: 220px;
+  accent-color: var(--color-accent);
+}
+
+.options-menu__close {
+  pointer-events: auto;
+  align-self: flex-end;
+  margin-top: var(--spacing-sm);
+  font-size: 0.8rem;
+  color: var(--color-text-dim);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.options-menu__close:hover {
+  color: var(--color-text);
+}

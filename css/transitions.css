@@ -1,0 +1,26 @@
+/*
+  Transición de pantalla completa usada por SceneManager/FadeTransition
+  entre cambios de escena. Un único overlay que se muestra/oculta con
+  una clase para mantener la lógica en JS y el aspecto en CSS.
+
+  El fundido no es negro plano: oscurece antes los bordes que el centro
+  (cierre en iris muy sutil), lo que hace la transición menos brusca.
+*/
+
+.fade-overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 130% 110% at 50% 45%,
+    rgba(3, 3, 6, 0.98) 0%,
+    var(--color-black) 100%
+  );
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-scene) var(--easing-standard);
+}
+
+.fade-overlay.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
