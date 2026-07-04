@@ -204,7 +204,8 @@ del escenario son CSS puro: viven en `css/effects.css`.
 | `inventory/InventoryUI.js` | El panel visual, se abre con la tecla de inventario. |
 | `audio/AudioManager.js` | Fachada única de audio. Exporta `audioManager`. |
 | `audio/MusicPlayer.js` | Una pista de música a la vez, en bucle. |
-| `audio/SoundEffects.js` | Efectos puntuales + un sonido ambiental en bucle. |
+| `audio/SoundEffects.js` | Efectos puntuales + un sonido ambiental en bucle. Si un id no tiene archivo, cae al sintetizador. |
+| `audio/proceduralSfx.js` | Placeholder sonoro sintetizado con Web Audio (pasos, puertas, interruptor, teclado). Un archivo real en el manifiesto siempre gana. |
 | `audio/audioManifest.js` | Catálogo id → ruta de archivo. **Aquí se registra cada sonido/música nueva.** |
 | `save/SaveManager.js` | Guardar/cargar partida en `localStorage`. Exporta `saveManager`. |
 | `save/SaveSchema.js` | Forma versionada de una partida guardada. |
@@ -227,7 +228,7 @@ del escenario son CSS puro: viven en `css/effects.css`.
 
 | Archivo | Qué hace |
 |---|---|
-| `dom.js` | `createElement`, `clearElement`, `applyShape` (placeholders de color). |
+| `dom.js` | `createElement`, `clearElement`, `applyShape` (forma base + skin de mobiliario). |
 | `math.js` | `clamp`, `lerp`, `distance`, `randomRange`. |
 | `logger.js` | `console.*` con prefijo consistente, silenciado salvo `CONFIG.DEBUG`. |
 
@@ -245,7 +246,9 @@ del escenario son CSS puro: viven en `css/effects.css`.
 
 Un archivo por sistema visual: `reset.css`, `variables.css` (todos los
 colores/tiempos/tamaños del juego), `main.css` (stage y capas),
-`scenes.css` (entidades, mundo y fondo parallax), `menu.css` (incluye
+`scenes.css` (entidades, mundo y fondo parallax), `furniture.css`
+(acabado detallado de cada mueble: reglas `.skin--nombre` elegidas con
+el campo `skin` del shape), `menu.css` (incluye
 el hueco para `assets/ui/menu_background.png`), `hud.css`,
 `interaction.css`, `dialogue.css`, `inventory.css`, `elevator.css`,
 `puzzles.css` (teclado numérico), `photo.css`, `effects.css` (grano,
@@ -276,13 +279,23 @@ No hace falta tocar ningún archivo de `js/`. Campos opcionales de un
 objeto (ver `js/entities/InteractiveObject.js`):
 
 - `label: 'Salón'` — etiqueta flotante (útil para marcar zonas).
+- `atWall: true` — pegado a la pared del fondo (base en el zócalo,
+  detrás del jugador, colisión al fondo). Ver "Pegado a la pared".
 - `verbs: ['examine', 'use']` — añade el verbo Usar.
 - `useText: '...'` — narración al Usar (interacciones sencillas).
 - `examineFlag: 'idBandera'` — marca una bandera al examinarlo.
 - `puzzle: { ... }` — lanza un puzle al Usar (ver "Crear un puzle").
 - `onUse: (entity) => {}` — escotilla de escape para casos únicos.
-- En `shape`: `glow: 'rgba(...)'` (halo de luz) y `flicker: true`
-  (parpadeo de fluorescente).
+- En `shape`: `glow: 'rgba(...)'` (halo de luz), `flicker: true`
+  (parpadeo de fluorescente) y `skin: 'nombre'` (acabado detallado
+  definido en `css/furniture.css`; el `color` pasa a ser el tinte base
+  `--skin-base`). Skins disponibles: wooddoor, wardrobe, nightstand,
+  boarded, metaldoor, bed, sink, mirror, toilet, bathtub, pipe,
+  bookshelf, plant, sofa, table, tv, chair, desk, radiator, window,
+  clock, painting-landscape, painting-building, photo-frame, paper,
+  counter, microwave, fridge, boxes, bin, socket, switch, crack,
+  junctionbox, fluorescent, exitsign, rug, doormat, shoe. Sin `skin`,
+  el shape se pinta como rectángulo/círculo plano del color dado.
 
 ### Añadir un personaje (NPC)
 
@@ -362,7 +375,36 @@ export class MiEscena extends GameplayScene {
 - **Polvo y respiración del escenario:** activados por defecto;
   se apagan por escena con `dust: false` / `breathe: false`.
 - **Color de las paredes (fondo parallax):** campo `wallColors:
-  { top, bottom }` en los datos de la escena.
+  { top, bottom }` en los datos de la escena; el suelo, con
+  `floorColors: { near, far }`.
+- **Tabiques entre habitaciones:** campo `walls: [{ x, width?,
+  doorway?, doorId? }]` en los datos de la escena. Bloquean el paso a
+  CUALQUIER profundidad; si llevan `doorId`, el hueco se abre cuando
+  esa puerta (una entidad `door` colocada en la misma x) está abierta —
+  así se entra y sale de las habitaciones abriendo su puerta. Toman el
+  color de pared de la habitación. Estilo en `.room-wall`
+  (css/scenes.css).
+- **Muebles sólidos (colisión):** `solid: true` en la entrada del
+  objeto. Solo bloquean cuando el jugador camina a su misma
+  profundidad (banda `SOLID_DEPTH_MIN..MAX` en GameplayScene); por
+  delante o por detrás se les rodea. Los personajes son sólidos por
+  defecto (`solid: false` lo desactiva).
+- **Pegado a la pared:** `atWall: true` en la entrada del objeto. Su
+  base pasa de la línea de paseo (`--floor-line`) a la línea de zócalo
+  (`--wall-line`), se encoge un poco por perspectiva y se dibuja
+  siempre detrás del jugador (clase `.entity--at-wall`, scenes.css).
+  Si además es `solid`, su colisión bloquea solo la banda del fondo
+  (`ATWALL_SOLID_DEPTH_MIN` en GameplayScene): se pasa libre por
+  delante y se choca al acercarse a la pared. Úsalo para camas,
+  armarios, sanitarios, radiadores, puertas y todo lo colgado (cuadros,
+  interruptores, enchufes: su `y` se mide desde el zócalo). Quedan
+  exentos lo que vive en mitad de la habitación: alfombras, mesitas de
+  centro, sillas separadas, el zapato del pasillo...
+- **Atrezzo:** `decor: true` = objeto mudo (sin examinar ni foco:
+  enchufes, tuberías, cajas eléctricas); `flat: true` = pieza a ras de
+  suelo sin sombra (alfombras, felpudos).
+- **Zoom de cámara:** global en `CONFIG.WORLD_ZOOM`; cada escena puede
+  fijar el suyo con el campo `zoom` en sus datos.
 - **Viñeta y grano de pantalla:** css/effects.css (pseudo-elementos
   de #game-stage); afectan a todo el juego.
 - **Sonido ambiental:** campo `ambientSound` en el archivo de datos de
@@ -424,6 +466,13 @@ export const ITEMS = {
   mostrarse) y `flag: 'id'` en una elección (se marca al elegirla).
   Se consultan en cualquier parte con `gameState.hasFlag('id')` — es
   el enganche entre conversaciones, puzles y eventos futuros.
+- **Arranque condicional:** `start` puede ser una función
+  `(gameState) => nodeId` para que la conversación empiece distinta
+  según las banderas (ver neighbor9A.js: la Sra. Aurora cambia de tema
+  cuando ya abriste el cuarto de contadores).
+- **Eventos de escena:** el patrón está en Floor9Scene.js — comprobar
+  banderas en onEnter, programar el susto con temporizadores (que se
+  limpian en onExit) y marcar una bandera para no repetirlo.
 - **Sonido por letra:** DialogueBox emite el sfx `dialogueBlip` cada
   dos letras; sonará en cuanto exista el archivo en el manifiesto.
 - **Retratos:** campo `portrait` en el nodo; hoy siempre es `null`
@@ -462,12 +511,18 @@ referencia** es el cuarto de contadores de la Planta 9: la clave
 con la Sra. Aurora y con Cosme — patrón "observa el escenario", no
 "busca la llave".
 
+Hay dos tipos de puzle ya implementados en `RUNNERS`:
+
+- `type: 'code'` — teclado numérico (el ejemplo de arriba).
+- `type: 'item'` — entrega de objeto: exige llevar `itemId` en el
+  inventario; con `consumesItem: true` el objeto se gasta. Campos
+  extra: `missingText` (sin el objeto) y `sfx` (sonido al resolver).
+  El ejemplo es la puerta clausurada 9D, que pide la polaroid.
+
 Para un **tipo de puzle nuevo** (relacionar fotografías, patrones de
 sonido...): añade una función al mapa `RUNNERS` de
 `js/puzzles/puzzleRunner.js`; si necesita interfaz propia, créala como
-componente al estilo de `KeypadUI` y regístrala en `UIManager`. Los
-puzles sin interfaz (comprobar que llevas un objeto, p. ej.) siguen
-siendo simplemente banderas + `onUse`.
+componente al estilo de `KeypadUI` y regístrala en `UIManager`.
 
 ### Modificar el sistema de guardado
 
@@ -537,9 +592,12 @@ realidad debería ser un evento (¿le importa a más de un sistema?).
 - **Un verbo, una acción**: los verbos de interacción son siempre uno
   de `Verb.EXAMINE/TALK/OPEN/CLOSE/USE` (`js/engine/Interactable.js`).
   No inventes verbos nuevos sin necesidad real.
-- **Sin arte todavía**: todo placeholder visual es CSS (`shape:
-  { kind, width, height, color }` en los datos de escena). No añadas
-  imágenes de prueba; cuando llegue el arte real, sustituye el shape.
+- **Sin imágenes**: todo el arte de objetos es CSS (`shape:
+  { kind, width, height, color, skin }` en los datos de escena; el
+  acabado de cada `skin` vive en `css/furniture.css`). No añadas
+  imágenes de prueba; si un mueble necesita más detalle, mejora su
+  skin. Ojo: las medidas en px de los skins están afinadas a los
+  width/height declarados en los datos.
 - **Comentarios solo cuando explican un porqué** no evidente en el
   código (una decisión, una restricción, un truco del navegador).
 
